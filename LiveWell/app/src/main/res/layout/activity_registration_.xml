@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".registration_Activity">
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView"
+        android:layout_width="357dp"
+        android:layout_height="45dp"
+        android:text="First name"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="17dp" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView2"
+        android:layout_width="355dp"
+        android:layout_height="50dp"
+        android:text="Last Name"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="75dp" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView3"
+        android:layout_width="348dp"
+        android:layout_height="44dp"
+        android:text="Email"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="143dp" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView4"
+        android:layout_width="349dp"
+        android:layout_height="50dp"
+        android:text="Password"
+        tools:layout_editor_absoluteX="18dp"
+        tools:layout_editor_absoluteY="200dp" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView5"
+        android:layout_width="357dp"
+        android:layout_height="38dp"
+        android:text="Repeat password"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="265dp" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView7"
+        android:layout_width="359dp"
+        android:layout_height="42dp"
+        android:text="Address 1"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="318dp" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView8"
+        android:layout_width="357dp"
+        android:layout_height="41dp"
+        android:text="City"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="379dp" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="267dp"
+        android:layout_height="38dp"
+        android:text="Registration"
+        tools:layout_editor_absoluteX="63dp"
+        tools:layout_editor_absoluteY="444dp" />
+</android.support.constraint.ConstraintLayout>
