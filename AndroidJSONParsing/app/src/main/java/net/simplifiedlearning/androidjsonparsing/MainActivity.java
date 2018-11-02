@@ -1,4 +1,6 @@
+/*
 package net.simplifiedlearning.androidjsonparsing;
+
 
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -11,17 +13,17 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     int i=0;
     String[] data=new String[10];
     private Button btn;
+    ArrayList<Integer> ids=new ArrayList<Integer>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,20 +108,45 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
-        });*/
+        });
         new Thread(new Runnable() {
             @Override
             public void run() {
                 mTTS.speak("Text which you want to read", TextToSpeech.QUEUE_FLUSH, null);
                 int j=0;
+                String text=null;
                 while (true) {
-                String text=data[j];
+                    try {
+                        text=data[j];
+                    }
+                catch (ArrayIndexOutOfBoundsException e){
+                        text="No bus yet! PLease wait!";
+                }
 
                 if(text==null){
                     text="Processing";
                 }
-                mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+                boolean play=false;
+                try {
+                   play=ids.get(j)!=null;
+                }
+                catch (IndexOutOfBoundsException e){
+
+                }
+
+                if(play){
+
+                    mTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+                    ids.set(j,null);
+
+                }
+                try {
                     j=(j+1)%data.length;
+                }
+                catch (ArithmeticException e){
+
+                }
+
                     try {
                        Thread.sleep(10000);
                     } catch (InterruptedException e) {
@@ -165,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                     con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                     con.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240 ");
                     con.setRequestProperty("Content-Language", "en-US");
-                    con.setRequestProperty("Cookie", "__test=b7e810df64c013c6a3f271236a040413; expires=Fri, 01-Jan-38 5:55:55 GMT; path=/");
+                    con.setRequestProperty("Cookie", "__test=f97add793073836837f7e68f367ddf47; expires=Fri, 01-Jan-38 5:55:55 GMT; path=/");
                     con.setUseCaches(false);
                     con.setDoInput(true);
                     con.setDoOutput(true);
@@ -193,7 +221,12 @@ public class MainActivity extends AppCompatActivity {
         for ( i = 0; i < jsonArray.length(); i++) {
             JSONObject obj = jsonArray.getJSONObject(i);
             line[i] = "Bus name "+obj.getString("name")+" has reached the station "+obj.getString("station_id" )+ " from "+obj.getString("vfrom" ) +" will depart for "+obj.getString("vto" );
-
+            try {
+                ids.set(i,i);
+            }
+            catch (IndexOutOfBoundsException e){
+                ids.add(i);
+            }
         }
         data=new String[line.length];
         System.arraycopy(line,0,data,0,line.length);
@@ -259,3 +292,221 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
+*/
+package net.simplifiedlearning.androidjsonparsing;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Locale;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class MainActivity extends AppCompatActivity {
+    static int mtsStatus = 0;
+    String connected = null;
+    String[] data;
+    private Handler handler;
+    /* renamed from: i */
+    int i = 0;
+    ArrayList<Integer> ids = new ArrayList();
+    ListView listView;
+    private TextToSpeech mTTS;
+
+
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        this.data = new String[10];
+        this.listView = (ListView) findViewById(R.id.listView);
+
+        mTTS = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    int result = mTTS.setLanguage(Locale.US);
+
+                    if (result == TextToSpeech.LANG_MISSING_DATA
+                            || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e("TTS", "Language not supported");
+                    } else {
+                        //mTTS.setPitch(0.7f);
+                        mTTS.setSpeechRate(0.7f);
+                        // mButtonSpeak.setEnabled(true);
+                    }
+                } else {
+                    Log.e("TTS", "Initialization failed");
+                }
+            }
+        });
+
+        new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                MainActivity.this.getJSON("http://notify247.epizy.com/json_test.php");
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        }).start();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.this.mTTS.speak("application is starting please wait !", 0, null);
+                int j = 0;
+                String text = null;
+                while (true) {
+                    try {
+                        text = MainActivity.this.data[j];
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        if (MainActivity.mtsStatus == 0) {
+                            MainActivity.mtsStatus = 1;
+                        }
+                    }
+                    if (MainActivity.this.connected != null) {
+                        text = MainActivity.this.connected;
+                    } else if (text == null) {
+                        text = "No bus yet , Please wait ";
+                    }
+                    try {
+                        if (MainActivity.this.ids.size() == 0) {
+                            MainActivity.this.mTTS.speak(text, 0, null);
+                        } else if (MainActivity.this.ids.get(j) != null) {
+                            StringBuilder stringBuilder = new StringBuilder();
+                            stringBuilder.append(MainActivity.this.ids.get(j));
+                            stringBuilder.append(" ======================>>>>>>");
+                            Log.i("tts", stringBuilder.toString());
+                            synchronized (MainActivity.this.mTTS) {
+                                MainActivity.this.mTTS.speak(text, 0, null);
+                                MainActivity.this.ids.set(j, null);
+                                j++;
+                            }
+                        } else if (MainActivity.this.ids.get(MainActivity.this.ids.size() - 1) == null) {
+                            MainActivity.this.mTTS.speak(text, 0, null);
+                        }
+                    } catch (IndexOutOfBoundsException e2) {
+                        text = "No bus yet , Please wait ";
+                    }
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e3) {
+                        e3.printStackTrace();
+                    }
+                }
+
+            }
+        }).start();
+    }
+
+
+    private void getJSON(final String urlWebService) {
+        new AsyncTask<Void, Void, String>() {
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+                try {
+                    MainActivity.this.loadIntoListView(s);
+                    MainActivity.this.connected = null;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e2) {
+                    MainActivity.this.connected = "Please enable internet connection";
+                }
+            }
+
+            protected String doInBackground(Void... voids) {
+                try {
+                    HttpURLConnection con = (HttpURLConnection) new URL(urlWebService).openConnection();
+                    con.setRequestMethod("POST");
+                    con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240 ");
+                    con.setRequestProperty("Content-Language", "en-US");
+                    con.setRequestProperty("Cookie", "__test=f97add793073836837f7e68f367ddf47; expires=Fri, 01-Jan-38 5:55:55 GMT; path=/");
+                    con.setUseCaches(false);
+                    con.setDoInput(true);
+                    con.setDoOutput(true);
+                    StringBuilder sb = new StringBuilder();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                    while (true) {
+                        String readLine = bufferedReader.readLine();
+                        String json = readLine;
+                        if (readLine == null) {
+                            return sb.toString().trim();
+                        }
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append(json);
+                        stringBuilder.append("\n");
+                        sb.append(stringBuilder.toString());
+                    }
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }.execute(new Void[0]);
+    }
+
+    private void loadIntoListView(String json) throws JSONException {
+        JSONArray jsonArray = new JSONArray(json);
+        String[] line = new String[jsonArray.length()];
+        i = 0;
+        while (i < jsonArray.length()) {
+            JSONObject obj = jsonArray.getJSONObject(i);
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Bus name ");
+            stringBuilder.append(obj.getString("name"));
+            stringBuilder.append(" has reached the station ");
+            stringBuilder.append(obj.getString("station_id"));
+            stringBuilder.append(" from ");
+            stringBuilder.append(obj.getString("vfrom"));
+            stringBuilder.append(" will depart for ");
+            stringBuilder.append(obj.getString("vto"));
+            line[i] = stringBuilder.toString();
+            synchronized (this.ids) {
+                try {
+                    if (this.ids.size() == 0) {
+                        this.ids.add(Integer.valueOf(0));
+                    }
+                    if (this.ids.get(i) != null) {
+                        this.ids.set(i, Integer.valueOf(i));
+                        StringBuilder stringBuilder2 = new StringBuilder();
+                        stringBuilder2.append(this.ids.get(i));
+                        stringBuilder2.append(" ======================>>>>>>");
+                        Log.i("i", stringBuilder2.toString());
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    this.ids.add(Integer.valueOf(i));
+                }
+            }
+            i++;
+        }
+        this.data = new String[line.length];
+        System.arraycopy(line, 0, this.data, 0, line.length);
+        this.listView.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, line));
+    }
+
+    protected void onDestroy() {
+        if (this.mTTS != null) {
+            this.mTTS.stop();
+            this.mTTS.shutdown();
+        }
+        super.onDestroy();
+    }
+}
