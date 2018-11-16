@@ -439,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
                     con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                     con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240 ");
                     con.setRequestProperty("Content-Language", "en-US");
-                    con.setRequestProperty("Cookie", "__test=f97add793073836837f7e68f367ddf47; expires=Fri, 01-Jan-38 5:55:55 GMT; path=/");
+                    con.setRequestProperty("Cookie", "__test=8cb5fa7eb142e6ad8c415425bd5074a1; expires=Fri, 01-Jan-38 5:55:55 GMT; path=/");
                     con.setUseCaches(false);
                     con.setDoInput(true);
                     con.setDoOutput(true);
