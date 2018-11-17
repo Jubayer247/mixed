@@ -43,7 +43,7 @@ void sendPositionReport(unsigned long now) {
     GSM_PORT.print("AT+CMGF=1\r"); 
     delay(400);
     GSM_PORT.print("AT+CMGS=\"");
-    GSM_PORT.print("01796074402");
+    GSM_PORT.print("01796074402");//01827095630
     GSM_PORT.println("\"");
     GSM_PORT.println("A car has been turned off in this location, emergency assistence needed ");
     delay(300);
@@ -75,23 +75,14 @@ void loop() {
     Serial.print(limit);//prints the limit reached as either LOW or HIGH (above or underneath)
     delay(100);
     
-    if(digitalRead(power)==HIGH){
+    if((digitalRead(power)==HIGH&&!carStarted)||(carStarted && value>240)){
         lcd.clear();
-        lcd.print("Trying to start");
+        if(!carStarted){
+            lcd.print("Trying to start");
+        }
+        delay(2000);
         unsigned long  starttime = millis();
         unsigned long endtime = starttime;
-        while((endtime - starttime) <=(10000)) // do this loop for up to 1000mS
-            {
-              value= analogRead(AOUTpin);//reads the analaog value from the alcohol sensor's AOUT pin
-              limit= digitalRead(DOUTpin);//reads the digital value from the alcohol sensor's DOUT pin
-              Serial.print("Alcohol value: ");
-              Serial.println(value);//prints the alcohol value
-              Serial.print("Limit: ");
-              Serial.print(limit);//prints the limit reached as either LOW or HIGH (above or underneath)
-              delay(100);
-             endtime = millis();
-             }
-        delay(1000);
         if (value>240){
             carStarted=false;
             lcd.clear();
@@ -102,39 +93,37 @@ void loop() {
             starttime = millis();
             endtime = starttime;
             smsSent=false;
-            while((endtime - starttime) <=(10000)) // do this loop for up to 1000mS
-            {
-              if(smsSent){
-                smsSent=false;
-                break;
-                }
-            unsigned long now = millis();
-            boolean gotGPS = false;
-            if ( actionState == AS_IDLE ) {
-              if ( fixStatus > 0 && now > lastActionTime + 10000 ) {
-          
-                sendPositionReport(now);
-          
-                lastActionTime = now;
-                httpResult = 0;
-                actionState = AS_WAITING_FOR_RESPONSE;
-              }
-            }
-            else {
-              // waiting on response - abort if taking too long
-              if ( now > lastActionTime + 15000 ) {
-                actionState = AS_IDLE;
-                parseState = PS_DETECT_MSG_TYPE;
-                resetBuffer();
-              }
-            }
-            sim808_loop();
-          endtime = millis();
-          }
-          
+            delay(2000);
             digitalWrite(buzzer,LOW);
             while((endtime - starttime) <=(60000)) // do this loop for up to 1000mS
             {
+
+////////////////////////////////////////////////////////////////start of sms block ///////////////////////////////////////////////////////////////////////////
+             if(!smsSent){
+                            unsigned long now = millis();
+                            boolean gotGPS = false;
+                            if ( actionState == AS_IDLE ) {
+                                if ( fixStatus > 0 && now > lastActionTime + 10000 ) {
+                      
+                                      sendPositionReport(now);
+                      
+                                      lastActionTime = now;
+                                      httpResult = 0;
+                                      actionState = AS_WAITING_FOR_RESPONSE;
+                                   }
+                            }
+                            else {
+                            // waiting on response - abort if taking too long
+                            if ( now > lastActionTime + 15000 ) {
+                                actionState = AS_IDLE;
+                                parseState = PS_DETECT_MSG_TYPE;
+                                resetBuffer();
+                            }
+                          }
+                          sim808_loop();
+                      }
+////////////////////////////////////////////////////////////////////end of sms block///////////////////////////////////////////////////////////////////
+              
               //lcd.clear();
               lcd.setCursor(0,1);
               unsigned long t=(endtime -starttime)/1000;
@@ -144,6 +133,7 @@ void loop() {
               lcd.setCursor(5,1);
               lcd.print((t%60));
               endtime = millis();
+              carStarted=false;
             }
       }
       else{
@@ -161,7 +151,7 @@ void loop() {
     lcd.clear();
     lcd.setCursor(0,0);
     if(carStarted){
-        lcd.print("Car started3");
+        lcd.print("Car started");
     }
     else{
       lcd.print("ENGINE OFF");
@@ -169,3 +159,5 @@ void loop() {
  }
   
 }
+
+

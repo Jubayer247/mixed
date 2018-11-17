@@ -345,7 +345,7 @@ void sim808_setup() {
   Serial.print( "Waiting for SIM startup..." );
   delay(10000);
 
-  sendGSM("AT+SAPBR=3,1,\"APN\",\"vodafone\"");  // change this for your cell provider
+  sendGSM("AT+SAPBR=3,1,\"APN\",\"gpinternet\"");  // change this for your cell provider
   sendGSM("AT+SAPBR=1,1",3000);
   sendGSM("AT+HTTPINIT", 500);
   sendGSM("AT+HTTPPARA=\"CID\",1", 500);
@@ -375,4 +375,5 @@ void sim808_loop() {
     lastLocCheck = now;
   }
 }
+
 
