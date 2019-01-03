@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
 #include <LiquidCrystal.h>
@@ -18,6 +19,8 @@ boolean smsSent=false;
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
+int addr = 0;
+byte untrackedTime=0;
 
 
 void setup() {
@@ -33,6 +36,11 @@ void setup() {
     pinMode(relay, OUTPUT);//sets the pin as an output of the arduino
     pinMode(power,INPUT);
     sim808_setup();
+    byte wt=60;
+    untrackedTime=60-EEPROM.read(addr);
+    //Serial.print("Eeprom value ");
+    //Serial.println(untrackedTime);
+    //delay(5*1000);
 }
 
 
@@ -58,12 +66,16 @@ void sendPositionReport(unsigned long now) {
     flushGSM(now);
     delay(500);
     smsSent=true;
+    
+
+    
 }
 
 
 
 
 void loop() {
+  
     lcd.setCursor(0,1);
     lcd.print("Monitoring");
     delay(200);
@@ -74,8 +86,10 @@ void loop() {
     Serial.print("Limit: ");
     Serial.print(limit);//prints the limit reached as either LOW or HIGH (above or underneath)
     delay(100);
-    
-    if((digitalRead(power)==HIGH&&!carStarted)||(carStarted && value>240)){
+    //Serial.print("Untracked time ");
+    //Serial.println(untrackedTime);
+   // delay(2000);
+    if((digitalRead(power)==HIGH&&!carStarted)||(carStarted && value>240) || (untrackedTime>0 && untrackedTime!=60)){
         lcd.clear();
         if(!carStarted){
             lcd.print("Trying to start");
@@ -83,10 +97,10 @@ void loop() {
         delay(2000);
         unsigned long  starttime = millis();
         unsigned long endtime = starttime;
-        if (value>240){
+        if (value>240 || untrackedTime){
             carStarted=false;
             lcd.clear();
-            lcd.print("Danger");
+            lcd.print("Alchohol detected!");
             lcd.setCursor(0,1);
             digitalWrite(buzzer,HIGH);
             digitalWrite(relay,LOW);
@@ -95,11 +109,20 @@ void loop() {
             smsSent=false;
             delay(2000);
             digitalWrite(buzzer,LOW);
-            while((endtime - starttime) <=(60000)) // do this loop for up to 1000mS
+            unsigned long loopCounter=60;
+            int rt=0;
+            if(untrackedTime>0){
+              loopCounter=untrackedTime;
+              rt=60-untrackedTime;
+              }
+              Serial.print("LP ");
+              Serial.println(loopCounter);
+              delay(2000);
+            while((endtime - starttime) <=loopCounter*1000) // do this loop for up to 1000mS
             {
 
 ////////////////////////////////////////////////////////////////start of sms block ///////////////////////////////////////////////////////////////////////////
-             if(!smsSent){
+             if(!smsSent && rt<15 ){
                             unsigned long now = millis();
                             boolean gotGPS = false;
                             if ( actionState == AS_IDLE ) {
@@ -126,7 +149,7 @@ void loop() {
               
               //lcd.clear();
               lcd.setCursor(0,1);
-              unsigned long t=(endtime -starttime)/1000;
+              unsigned long t=rt+((endtime -starttime)/1000);
               lcd.print(t/60);
               lcd.setCursor(3,1);
               lcd.print(":");
@@ -134,7 +157,12 @@ void loop() {
               lcd.print((t%60));
               endtime = millis();
               carStarted=false;
+              EEPROM.write(addr, (byte)((endtime - starttime)/1000));
+              Serial.println(EEPROM.read(addr));
+
             }
+            EEPROM.write(addr, 0);
+            untrackedTime=0;
       }
       else{
           lcd.clear();
@@ -156,6 +184,7 @@ void loop() {
     else{
       lcd.print("ENGINE OFF");
       }
+      
  }
   
 }

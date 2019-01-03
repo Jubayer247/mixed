@@ -12,8 +12,8 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
 
 /* Set these to your desired credentials. */
-const char *ssid = "Firefly";  //ENTER YOUR WIFI SETTINGS
-const char *password = "nothingwrong";
+const char *ssid = "sam";  //ENTER YOUR WIFI SETTINGS
+const char *password = "12345678";
 
 //Web/Server address to read/write from 
 const char *host = "http://notify247.epizy.com";   //http://notify247.epizy.com website or IP address of server
@@ -104,9 +104,11 @@ Serial.println(s);
   postData = "request=" + s;
   
   http.begin("http://notify247.epizy.com/info.php");              //Specify request destination
+  delay(200);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");    //Specify content-type header
   http.addHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240 ");
-  http.addHeader("Cookie", "__test=7f04e0c131a1ac373076b95b181ad0b3; expires=Fri, 01-Jan-38 5:55:55 GMT; path=/");
+  http.addHeader("Cookie", "__test=7cc53b3dc904122e5ca426bd70800218; expires=Fri, 01-Jan-38 5:55:55 GMT; path=/");
+  delay(200);
   int httpCode = http.POST(postData);   //Send the request
   String payload = http.getString();    //Get the response payload
 
