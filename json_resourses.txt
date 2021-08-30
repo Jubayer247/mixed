@@ -1,4 +1,0 @@
-http://www.tutorialspoint.com/android/android_json_parser.htm
-http://jsonprettyprint.com/
-https://jsonformatter.curiousconcept.com/
-https://gist.githubusercontent.com/anonymous/e4acd750376afac52eba3702b3659131/raw/06e109b2a2c60626b70c929140fced6ef60bdb45/response.json
